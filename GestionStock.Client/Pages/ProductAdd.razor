@@ -1,0 +1,80 @@
+﻿@page "/product/add"
+
+@if(_categories != null)
+{
+@* Balise nécessaire pour les formulaires *@
+<EditForm Model="_form" OnValidSubmit="OnSubmit">
+    <MudGrid Class="pa-8" Spacing="8">
+        <MudItem sm="12" md="6">
+            <MudTextField 
+                Label="Nom du produit"
+                Variant="Variant.Outlined" 
+                @bind-Value="_form.Name"></MudTextField>
+        </MudItem>
+
+        <MudItem sm="12" md="6">
+            <MudSelect Label="Categories"
+                       Variant="Variant.Outlined"
+                       MultiSelection="true"
+                       @bind-SelectedValues="_form.Categories">
+                    @foreach(var c in _categories)
+                    {
+                        <MudSelectItem Value="@c.Id">@c.Name</MudSelectItem>
+                    }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem sm="12">
+            <MudTextField 
+                Label="Description"
+                Variant="Variant.Outlined"
+                @bind-Value="_form.Description"
+                MaxLines="20"
+                Lines="5"
+            />
+        </MudItem>
+        <MudItem sm="12" md="6">
+            <MudNumericField 
+                Label="Prix"    
+                Variant="Variant.Outlined"
+                @bind-Value="_form.Price"
+            />
+        </MudItem>
+        <MudItem sm="12" md="6">
+            <MudNumericField Label="Quantité"
+                          Variant="Variant.Outlined"
+                          @bind-Value="_form.Quantity"
+                          />
+        </MudItem>
+        <MudItem sm="12" md="6">
+            <MudFileUpload 
+                T="IBrowserFile" FilesChanged="FileChangedHandler" >
+                <ActivatorContent>
+                    @if (_preview != null)
+                    {
+                        <img src="@_preview" />
+                    }
+                    else
+                    {
+                        <MudButton>Charger une image</MudButton> 
+                    }
+                </ActivatorContent>
+            </MudFileUpload>
+            
+        </MudItem>
+        <MudItem sm="12">
+            <MudButton
+                ButtonType="ButtonType.Submit"
+                Color="Color.Info"
+                Variant="Variant.Filled"
+                Size="Size.Medium"
+                EndIcon="@Icons.Material.Filled.Save"
+                FullWidth
+            >Ajouter</MudButton>
+        </MudItem>
+    </MudGrid>
+    </EditForm>
+} else
+{
+    <p>Chargement en cours ...</p>
+}
