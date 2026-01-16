@@ -1,7 +1,69 @@
 ﻿@page "/"
+@using GestionStock.Client.Models
 
-<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<PageTitle>Nos Produits</PageTitle>
 
-Welcome to your new app.
+<div class="pa-8">
+    <MudButton Href="/product/add"
+               Variant="Variant.Outlined"
+               Color="Color.Info"
+               EndIcon="@Icons.Material.Filled.AddCircle"
+               Class="mb-8"
+    >Ajouter</MudButton>
+
+    <MudTable Items="@products">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Nos Produits</MudText>
+            <MudSpacer />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Reference</MudTh>
+            <MudTh>Name</MudTh>
+            <MudTh>Description</MudTh>
+            <MudTh>ImageUrl</MudTh>
+            <MudTh>Price</MudTh>
+            <MudTh>Categories</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Reference">@context.Reference</MudTd>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="Description">@context.Description</MudTd>
+            <MudTd DataLabel="ImageUrl">@context.ImageUrl</MudTd>
+            <MudTd DataLabel="Price">@context.Price</MudTd>
+            <MudTd DataLabel="Categories">@string.Join(",", context.Categories.Select(c => c.Name))</MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</div>
+
+
+
+@code {
+    [Inject]
+    public required ISnackbar Snackbar { get; set; }
+
+    [Inject] 
+    public required HttpClient Http { get; set; }
+
+    [Inject]
+    public required LoadingStateService LoadingState { get; set; }
+
+    private IEnumerable<ProductsModels> products = new List<ProductsModels>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            LoadingState.IsLoading = true;
+            products = (await Http.GetFromJsonAsync<List<ProductsModels>>("/api/Product") ?? throw new HttpRequestException());
+            LoadingState.IsLoading = false;
+        }
+        catch(HttpRequestException)
+        {
+            Snackbar.Add("Le chargement des données a echoué", Severity.Error);
+        }
+    }
+}
