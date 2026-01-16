@@ -1,10 +1,19 @@
 ﻿using GestionStock.Client.Models;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.SignalR.Client;
+using System.Net.Http.Json;
 
 namespace GestionStock.Client.Services
 {
-    public class ProductService(HttpClient httpClient)
+    public class ProductService
     {
+        private HttpClient httpClient;
+
+        public ProductService(HttpClient httpClient)
+        {
+            this.httpClient = httpClient;
+        }
+
         public async Task Add(ProductForm form, IBrowserFile? image)
         {
             var content = new MultipartFormDataContent
@@ -33,5 +42,15 @@ namespace GestionStock.Client.Services
             
             await httpClient.PostAsync("/api/product", content);
         }
+
+        public async Task<List<Product>> Get()
+        {
+            return await httpClient.GetFromJsonAsync<List<Product>>("/api/Product") ?? throw new HttpRequestException();
+        }
+
+        public async Task Delete(Product product)
+        {
+            await httpClient.DeleteAsync($"/api/product/{product.Id}");
+        } 
     }
 }

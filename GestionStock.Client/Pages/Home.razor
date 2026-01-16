@@ -18,6 +18,7 @@
             <MudSpacer />
         </ToolBarContent>
         <HeaderContent>
+            <MudTh>Delete</MudTh>
             <MudTh>Reference</MudTh>
             <MudTh>Name</MudTh>
             <MudTh>Description</MudTh>
@@ -26,6 +27,9 @@
             <MudTh>Categories</MudTh>
         </HeaderContent>
         <RowTemplate>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => Delete(context)"/>
+            </MudTd>          
             <MudTd DataLabel="Reference">@context.Reference</MudTd>
             <MudTd DataLabel="Name">@context.Name</MudTd>
             <MudTd DataLabel="Description">@context.Description</MudTd>
@@ -42,28 +46,47 @@
 
 
 @code {
+    [Inject] 
+    private IDialogService DialogService { get; set; }
+
     [Inject]
     public required ISnackbar Snackbar { get; set; }
 
     [Inject] 
-    public required HttpClient Http { get; set; }
+    public required ProductService ProductService { get; set; }
 
     [Inject]
     public required LoadingStateService LoadingState { get; set; }
 
-    private IEnumerable<ProductsModels> products = new List<ProductsModels>();
+    private IEnumerable<Product> products = new List<Product>();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
             LoadingState.IsLoading = true;
-            products = (await Http.GetFromJsonAsync<List<ProductsModels>>("/api/Product") ?? throw new HttpRequestException());
+            products = await ProductService.Get();
             LoadingState.IsLoading = false;
         }
         catch(HttpRequestException)
         {
             Snackbar.Add("Le chargement des données a echoué", Severity.Error);
+        }
+    }
+
+    private async Task Delete(Product product)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Attention",
+            "Es-tu sûr de vouloir le supprimer ?",
+            yesText: "Oui", cancelText: "Annuler");
+        if (result == true)
+        {
+            LoadingState.IsLoading = true;
+            await ProductService.Delete(product);
+            products = await ProductService.Get();
+            LoadingState.IsLoading = false;
+            Snackbar.Add("Le produit a bien été supprimé", Severity.Success);  
         }
     }
 }

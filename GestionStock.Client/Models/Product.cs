@@ -1,7 +1,7 @@
 ﻿namespace GestionStock.Client.Models
 {
     
-    public class ProductsModels
+    public class Product
     {
         public int Id { get; set; }
         public string Reference { get; set; } = "";
