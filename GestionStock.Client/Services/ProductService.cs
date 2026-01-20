@@ -1,6 +1,5 @@
 ﻿using GestionStock.Client.Models;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.AspNetCore.SignalR.Client;
 using System.Net.Http.Json;
 
 namespace GestionStock.Client.Services
@@ -50,7 +49,11 @@ namespace GestionStock.Client.Services
 
         public async Task Delete(Product product)
         {
-            await httpClient.DeleteAsync($"/api/product/{product.Id}");
+            var result = await httpClient.DeleteAsync($"/api/product/{product.Id}");
+            if(!result.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException();
+            }
         } 
     }
 }

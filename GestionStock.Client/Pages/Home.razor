@@ -1,16 +1,23 @@
 ﻿@page "/"
 @using GestionStock.Client.Models
+@using GestionStock.Client.Security
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
 
+@attribute [Authorize]
 
 <PageTitle>Nos Produits</PageTitle>
 
 <div class="pa-8">
-    <MudButton Href="/product/add"
-               Variant="Variant.Outlined"
-               Color="Color.Info"
-               EndIcon="@Icons.Material.Filled.AddCircle"
-               Class="mb-8"
-    >Ajouter</MudButton>
+    @if(AuthState.User.HasAnyRoles("Admin", "Restocker"))
+    {
+        <MudButton Href="/product/add"
+                   Variant="Variant.Outlined"
+                   Color="Color.Info"
+                   EndIcon="@Icons.Material.Filled.AddCircle"
+                   Class="mb-8"
+        >Ajouter</MudButton>
+    }
 
     <MudTable Items="@products">
         <ToolBarContent>
@@ -28,7 +35,12 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd>
-                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="() => Delete(context)"/>
+                <MudIconButton 
+                    Icon="@Icons.Material.Filled.Delete" 
+                    Color="Color.Error" 
+                    OnClick="() => Delete(context)"
+                    Disabled="@(!AuthState.User.IsInRole("Admin"))"
+                    />
             </MudTd>          
             <MudTd DataLabel="Reference">@context.Reference</MudTd>
             <MudTd DataLabel="Name">@context.Name</MudTd>
@@ -47,7 +59,7 @@
 
 @code {
     [Inject] 
-    private IDialogService DialogService { get; set; }
+    public required IDialogService DialogService { get; set; }
 
     [Inject]
     public required ISnackbar Snackbar { get; set; }
@@ -58,10 +70,16 @@
     [Inject]
     public required LoadingStateService LoadingState { get; set; }
 
+    [Inject]
+    public required AuthenticationStateProvider Auth { get; set; }
+
+    private AuthenticationState AuthState = new AuthenticationState(new ClaimsPrincipal());
+
     private IEnumerable<Product> products = new List<Product>();
 
     protected override async Task OnInitializedAsync()
     {
+        AuthState = await Auth.GetAuthenticationStateAsync();
         try
         {
             LoadingState.IsLoading = true;
@@ -83,10 +101,17 @@
         if (result == true)
         {
             LoadingState.IsLoading = true;
-            await ProductService.Delete(product);
-            products = await ProductService.Get();
+            try
+            {
+                await ProductService.Delete(product);
+                products = await ProductService.Get();
+                Snackbar.Add("Le produit a bien été supprimé", Severity.Success);  
+            }
+            catch(HttpRequestException)
+            {
+                Snackbar.Add("Le produit n'a pas pu supprimé", Severity.Error);
+            }
             LoadingState.IsLoading = false;
-            Snackbar.Add("Le produit a bien été supprimé", Severity.Success);  
         }
     }
 }

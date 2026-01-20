@@ -7,3 +7,7 @@
 html {
     font-size: 12px;
 }
+
+#app {
+    min-width: 100vh;
+}

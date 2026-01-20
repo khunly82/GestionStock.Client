@@ -1,0 +1,46 @@
+﻿@page "/Login"
+@using GestionStock.Client.Models
+@using GestionStock.Client.Security
+
+<div class="d-flex justify-center align-items-center">
+    <EditForm OnValidSubmit="LoginHandler" Model="_form">
+        <MudCard Class="pa-6">
+            <MudCardContent>
+                <DataAnnotationsValidator />
+                <MudTextField Class="mb-4" Label="Nom" Variant="Variant.Outlined" @bind-Value="_form.Username" For="() => _form.Username" />
+                <MudTextField Label="Password" Variant="Variant.Outlined" @bind-Value="_form.Password" For="() => _form.Password" InputType="InputType.Password" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton FullWidth ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info">Se connecter</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+</div>
+
+@code {
+    [Inject]
+    public required HttpClient HttpClient { get; set; }
+
+    [Inject]
+    public required AuthenticationStateProvider Auth { get; set; }
+
+    [Inject]
+    public required NavigationManager NavigationManager { get; set; }
+
+    private LoginForm _form = new LoginForm { Username = "", Password = "" };
+
+    private async Task LoginHandler()
+    {
+        var result = await HttpClient.PostAsJsonAsync("api/login", _form);
+        if(result.IsSuccessStatusCode)
+        {
+            // je désérialize le json en objet c#
+            var token = (await result.Content.ReadFromJsonAsync<ResponseToken>())?.token;
+            if(token != null)
+            {
+                await ((JwtAuthenticationStateProvider)Auth).Login(token);
+                NavigationManager.NavigateTo("/");
+            }
+        }
+    }
+}
