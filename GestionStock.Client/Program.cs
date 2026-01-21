@@ -31,6 +31,8 @@ builder.Services.AddMsalAuthentication(options =>
     options.ProviderOptions.Authentication.ValidateAuthority = true;
 
     options.ProviderOptions.DefaultAccessTokenScopes.Add("api://07459912-8c28-474a-ac71-e272bdfb44cc/user_access");
+
+    options.ProviderOptions.LoginMode = "redirect";
 })
 .AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, CustomUserFactory>();
 
