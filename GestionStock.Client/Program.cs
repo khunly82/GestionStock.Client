@@ -21,7 +21,7 @@ builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddSingleton<LoadingStateService>();
 
-builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
+ ///builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 
 builder.Services.AddMsalAuthentication(options =>
 {
