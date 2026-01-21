@@ -25,7 +25,11 @@ builder.Services.AddSingleton<LoadingStateService>();
 
 builder.Services.AddMsalAuthentication(options =>
 {
-    builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+
+    options.ProviderOptions.Authentication.Authority = "https://login.microsoftonline.com/70d1d84d-d851-4dbf-8b45-1fd01c24ee60";
+    options.ProviderOptions.Authentication.ClientId = "1314b8e2-e176-4cd4-8ab9-7560ef29d4b9";
+    options.ProviderOptions.Authentication.ValidateAuthority = true;
+
     options.ProviderOptions.DefaultAccessTokenScopes.Add("api://07459912-8c28-474a-ac71-e272bdfb44cc/user_access");
 })
 .AddAccountClaimsPrincipalFactory<RemoteAuthenticationState, RemoteUserAccount, CustomUserFactory>();
